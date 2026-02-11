@@ -1,0 +1,13 @@
+{
+  "name": "sistema-vendas-pwa",
+  "version": "1.0.0",
+  "description": "Sistema de vendas online e offline (PWA) com sincronização automática",
+  "private": true,
+  "scripts": {
+    "build": "cd frontend && npm ci && npm run build && cd ../backend && npm ci",
+    "start": "node backend/server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
