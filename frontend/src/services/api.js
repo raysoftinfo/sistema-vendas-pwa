@@ -1,10 +1,12 @@
 import axios from 'axios';
 import * as offline from './offline';
 
-// Backend roda na porta 3333. Se a página estiver em outra porta, as chamadas vão para 3333.
+// Em produção (ex.: Railway) a URL não tem porta → mesma origem. Localmente usa :3333.
 function getBaseURL() {
   if (typeof window === 'undefined') return '';
   const port = window.location.port || '';
+  // Sem porta (80/443) = produção → mesma origem
+  if (port === '') return '';
   if (port === '3333' || port === '3000') return '';
   const host = window.location.hostname || 'localhost';
   const protocol = window.location.protocol || 'http:';

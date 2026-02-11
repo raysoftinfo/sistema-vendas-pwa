@@ -71,14 +71,29 @@ async function login() {
     localStorage.setItem('token', res.data.token || 'ok');
     emit('entrou');
   } catch (e) {
-    const errorMsg = e.response?.data?.erro || (e.request ? 'Sem conexão com o servidor. Tente novamente.' : 'Erro ao entrar.');
-    const senhaFraca = e.response?.data?.senhaFraca;
-    
+    const data = e.response?.data;
+    let errorMsg = null;
+    if (data && typeof data === 'object') {
+      errorMsg = data.erro || data.message || data.error || (data.detalhe ? String(data.detalhe) : null);
+    } else if (data && typeof data === 'string') {
+      errorMsg = data;
+    }
+    if (!errorMsg) {
+      if (e.response) {
+        errorMsg = `Servidor respondeu ${e.response.status}. Abra o Console (F12) para detalhes.`;
+      } else if (e.request) {
+        errorMsg = 'Sem conexão com o servidor. Verifique a internet.';
+      } else {
+        errorMsg = (e.message && e.message.length < 150) ? e.message : 'Erro ao entrar. Abra o Console (F12).';
+      }
+    }
+    const senhaFraca = data?.senhaFraca;
     if (senhaFraca) {
-      erro.value = `${errorMsg} - Clique no botão "Mudar Senha" para fortalecê-la.`;
+      erro.value = `${errorMsg} - Clique em "Mudar Senha" para fortalecê-la.`;
     } else {
       erro.value = errorMsg;
     }
+    console.error('Login falhou:', e.response?.status, e.response?.data, e.message, e);
   } finally {
     loading.value = false;
   }
@@ -103,7 +118,25 @@ async function cadastrar() {
     erro.value = '';
     login();
   } catch (e) {
-    erro.value = e.response?.data?.erro || (e.request ? 'Sem conexão com o servidor.' : 'Erro ao cadastrar. Tente novamente.');
+    // Mostrar sempre a mensagem que o servidor enviou; se não tiver, explicar o que deu
+    const data = e.response?.data;
+    let msg = null;
+    if (data && typeof data === 'object') {
+      msg = data.erro || data.message || data.error || (data.detalhe ? String(data.detalhe) : null);
+    } else if (data && typeof data === 'string') {
+      msg = data;
+    }
+    if (!msg) {
+      if (e.response) {
+        msg = `Servidor respondeu ${e.response.status}: ${e.response.statusText || 'erro'}. Abra o Console (F12) para detalhes.`;
+      } else if (e.request) {
+        msg = 'Sem conexão com o servidor. Verifique a internet ou se o app está no ar.';
+      } else {
+        msg = (e.message && e.message.length < 150) ? e.message : 'Erro ao cadastrar. Abra o Console (F12) para ver o detalhe.';
+      }
+    }
+    erro.value = msg;
+    console.error('Cadastro falhou:', e.response?.status, e.response?.data, e.message, e);
   } finally {
     loading.value = false;
   }

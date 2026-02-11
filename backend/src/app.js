@@ -24,6 +24,13 @@ app.use(helmet());
 app.use(morgan('combined'));
 app.use(routes);
 
+// Qualquer erro não tratado volta como JSON com mensagem clara (nunca resposta vazia ou HTML)
+app.use((err, req, res, next) => {
+  console.error('Erro não tratado:', err.message || err);
+  const msg = (err.message && err.message.length <= 200) ? err.message : 'Erro interno do servidor';
+  res.status(res.statusCode >= 400 ? res.statusCode : 500).json({ erro: msg });
+});
+
 const frontendDist = path.join(__dirname, '..', '..', 'frontend', 'dist');
 app.use(express.static(frontendDist));
 app.get('*', (req, res) => {
