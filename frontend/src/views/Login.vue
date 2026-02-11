@@ -10,6 +10,7 @@
     </div>
 
     <p v-if="erro" class="erro">{{ erro }}</p>
+    <p v-if="sucesso" class="sucesso">{{ sucesso }}</p>
 
     <p class="cadastro">
       Primeira vez? <a href="#" @click.prevent="mostrarCadastro = true">Cadastrar</a>
@@ -44,10 +45,18 @@ import { ref } from 'vue';
 
 const emit = defineEmits(['entrou']);
 
+function mensagemAmigavel(msg) {
+  if (!msg || typeof msg !== 'string') return 'Erro inesperado. Recarregue a página e tente novamente.';
+  if (/is not a function|não é uma função|undefined is not/i.test(msg)) return 'Erro interno. Recarregue a página (F5) e tente novamente.';
+  if (msg.length > 120) return 'Erro inesperado. Recarregue a página e tente novamente.';
+  return msg;
+}
+
 const email = ref('');
 const senha = ref('');
 const loading = ref(false);
 const erro = ref('');
+const sucesso = ref('');
 const mostrarCadastro = ref(false);
 const nome = ref('');
 const emailCadastro = ref('');
@@ -58,6 +67,7 @@ const confirmarNovaSenha = ref('');
 
 async function login() {
   erro.value = '';
+  sucesso.value = '';
   if (!email.value || !senha.value) {
     erro.value = 'Preencha email e senha';
     return;
@@ -80,11 +90,11 @@ async function login() {
     }
     if (!errorMsg) {
       if (e.response) {
-        errorMsg = `Servidor respondeu ${e.response.status}. Abra o Console (F12) para detalhes.`;
+        errorMsg = `Servidor respondeu ${e.response.status}. Tente novamente.`;
       } else if (e.request) {
         errorMsg = 'Sem conexão com o servidor. Verifique a internet.';
       } else {
-        errorMsg = (e.message && e.message.length < 150) ? e.message : 'Erro ao entrar. Abra o Console (F12).';
+        errorMsg = mensagemAmigavel(e.message);
       }
     }
     const senhaFraca = data?.senhaFraca;
@@ -101,6 +111,7 @@ async function login() {
 
 async function cadastrar() {
   erro.value = '';
+  sucesso.value = '';
   if (!nome.value || !emailCadastro.value || !senhaCadastro.value) {
     erro.value = 'Preencha todos os campos';
     return;
@@ -116,7 +127,7 @@ async function cadastrar() {
     senha.value = senhaCadastro.value;
     mostrarCadastro.value = false;
     erro.value = '';
-    login();
+    sucesso.value = 'Cadastro feito. Clique em Entrar para acessar.';
   } catch (e) {
     // Mostrar sempre a mensagem que o servidor enviou; se não tiver, explicar o que deu
     const data = e.response?.data;
@@ -128,11 +139,11 @@ async function cadastrar() {
     }
     if (!msg) {
       if (e.response) {
-        msg = `Servidor respondeu ${e.response.status}: ${e.response.statusText || 'erro'}. Abra o Console (F12) para detalhes.`;
+        msg = `Servidor respondeu ${e.response.status}. Tente novamente.`;
       } else if (e.request) {
         msg = 'Sem conexão com o servidor. Verifique a internet ou se o app está no ar.';
       } else {
-        msg = (e.message && e.message.length < 150) ? e.message : 'Erro ao cadastrar. Abra o Console (F12) para ver o detalhe.';
+        msg = mensagemAmigavel(e.message);
       }
     }
     erro.value = msg;
