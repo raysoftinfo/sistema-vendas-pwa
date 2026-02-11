@@ -14,7 +14,11 @@ function getBaseURL() {
 }
 
 const baseURL = getBaseURL();
-const defaultAdapter = axios.defaults.adapter;
+
+// Adapter padrão do axios (guardado de forma estável para a build)
+function getDefaultAdapter() {
+  return axios.defaults.adapter;
+}
 
 const api = axios.create({
   baseURL,
@@ -50,17 +54,27 @@ const api = axios.create({
       };
     }
 
-    return defaultAdapter(config);
+    const adapter = getDefaultAdapter();
+    if (typeof adapter !== 'function') {
+      return Promise.reject(new Error('Erro de conexão. Recarregue a página.'));
+    }
+    return adapter(config);
   }
 });
 
-api.interceptors.request.use((config) => {
+/** Axios só para login/cadastro/senha — sem adapter offline, evita erros na build. */
+const apiAuth = axios.create({ baseURL });
+
+function addAuthHeader(config) {
   const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
-});
+}
+
+api.interceptors.request.use(addAuthHeader);
+apiAuth.interceptors.request.use(addAuthHeader);
 
 api.interceptors.response.use(
   (response) => {
@@ -119,5 +133,5 @@ export function initOnlineListener(onChange) {
   if (offline.isOnline()) onChange('online');
 }
 
-export { offline };
+export { offline, apiAuth };
 export default api;

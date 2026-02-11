@@ -40,7 +40,7 @@
 </template>
 
 <script setup>
-import api from '../services/api';
+import api, { apiAuth } from '../services/api';
 import { ref } from 'vue';
 
 const emit = defineEmits(['entrou']);
@@ -74,7 +74,7 @@ async function login() {
   }
   loading.value = true;
   try {
-    const res = await api.post('/login', {
+    const res = await apiAuth.post('/login', {
       email: email.value,
       senha: senha.value
     });
@@ -119,7 +119,7 @@ async function cadastrar() {
   }
   loading.value = true;
   try {
-    await api.post('/register', {
+    await apiAuth.post('/register', {
       nome: nome.value,
       email: emailCadastro.value,
       senha: senhaCadastro.value
@@ -168,7 +168,7 @@ async function mudarSenha() {
   loading.value = true;
   try {
     // Atualizar a senha do usuário
-    await api.put('/usuarios/senha', {
+    await apiAuth.put('/usuarios/senha', {
       senha: novaSenha.value
     });
     
