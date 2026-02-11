@@ -30,31 +30,10 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(frontendDist, 'index.html'));
 });
 
-// Desativar sincronização automática para evitar conflitos
-// sequelize.sync({ alter: true }).then(async () => {
-//   console.log('Banco de dados sincronizado');
-//   const count = await Usuario.count();
-//   if (count === 0) {
-//     const bcrypt = require('bcryptjs');
-//     const senhaHash = await bcrypt.hash('123456', 8);
-//     await Usuario.create({
-//       nome: 'Administrador',
-//       email: 'admin@controle.com',
-//       senha: senhaHash
-//     });
-//     console.log('Usuario padrão criado: admin@controle.com / 123456');
-//   }
-// }).catch(err => {
-//   console.error('Erro na sincronização do banco de dados:', err);
-//   // Tenta continuar mesmo com erro de sincronização
-//   console.log('Continuando com o servidor...');
-// });
-
-// Simples verificação de conexão
-sequelize.authenticate()
+// Criar tabelas e usuário padrão na inicialização (necessário no deploy, ex.: Railway)
+sequelize.sync()
   .then(() => {
-    console.log('Conexão com banco de dados estabelecida com sucesso');
-    // Verificar se o usuário padrão existe e criar se necessário
+    console.log('Banco de dados sincronizado');
     return Usuario.count();
   })
   .then(async (count) => {
@@ -70,7 +49,7 @@ sequelize.authenticate()
     }
   })
   .catch(err => {
-    console.error('Erro ao conectar ao banco de dados:', err);
+    console.error('Erro ao sincronizar banco de dados:', err);
   });
 
 module.exports = app;
