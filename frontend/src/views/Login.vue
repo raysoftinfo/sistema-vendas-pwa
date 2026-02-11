@@ -98,10 +98,11 @@ async function login() {
       }
     }
     const senhaFraca = data?.senhaFraca;
+    const textoFinal = mensagemAmigavel(errorMsg);
     if (senhaFraca) {
-      erro.value = `${errorMsg} - Clique em "Mudar Senha" para fortalecê-la.`;
+      erro.value = `${textoFinal} - Clique em "Mudar Senha" para fortalecê-la.`;
     } else {
-      erro.value = errorMsg;
+      erro.value = textoFinal;
     }
     console.error('Login falhou:', e.response?.status, e.response?.data, e.message, e);
   } finally {
@@ -146,7 +147,7 @@ async function cadastrar() {
         msg = mensagemAmigavel(e.message);
       }
     }
-    erro.value = msg;
+    erro.value = mensagemAmigavel(msg);
     console.error('Cadastro falhou:', e.response?.status, e.response?.data, e.message, e);
   } finally {
     loading.value = false;
@@ -178,7 +179,8 @@ async function mudarSenha() {
     novaSenha.value = '';
     confirmarNovaSenha.value = '';
   } catch (e) {
-    erro.value = e.response?.data?.erro || 'Erro ao alterar senha';
+    const msg = e.response?.data?.erro || e.response?.data?.message || 'Erro ao alterar senha';
+    erro.value = mensagemAmigavel(msg);
   } finally {
     loading.value = false;
   }
