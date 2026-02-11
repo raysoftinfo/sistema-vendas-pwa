@@ -52,31 +52,51 @@ module.exports = {
       const { senha: _, ...userSemSenha } = user.toJSON();
       res.json(userSemSenha);
     } catch (err) {
+      console.error('Erro ao cadastrar:', err.message || err);
       if (err.name === 'SequelizeUniqueConstraintError') {
         return res.status(400).json({ erro: 'Email já cadastrado' });
       }
-      res.status(500).json({ erro: 'Erro ao cadastrar' });
+      if (err.name === 'SequelizeValidationError' && err.errors?.length) {
+        const msg = err.errors.map(e => e.message).join('. ');
+        return res.status(400).json({ erro: msg });
+      }
+      if (err.name === 'SequelizeDatabaseError' || err.message?.includes('SQLITE')) {
+        return res.status(500).json({ erro: 'Erro no banco de dados. O servidor pode estar iniciando — tente novamente em instantes.' });
+      }
+      const mensagem = err.message && err.message.length < 120 ? err.message : 'Erro ao cadastrar. Verifique os dados e tente novamente.';
+      return res.status(500).json({ erro: mensagem });
     }
   },
 
   async login(req, res) {
-    const email = (req.body.email || '').trim();
-    const senha = (req.body.senha || '').trim();
+    try {
+      const email = (req.body.email || '').trim();
+      const senha = (req.body.senha || '').trim();
 
-    const user = await Usuario.findOne({ where: { email } });
-    if (!user) {
-      return res.status(401).json({ erro: 'Usuário não encontrado' });
+      if (!email || !senha) {
+        return res.status(400).json({ erro: 'Informe email e senha' });
+      }
+
+      const user = await Usuario.findOne({ where: { email } });
+      if (!user) {
+        return res.status(401).json({ erro: 'Usuário não encontrado. Verifique o email ou cadastre-se.' });
+      }
+
+      const ok = await bcrypt.compare(senha, user.senha);
+      if (!ok) {
+        return res.status(401).json({ erro: 'Senha incorreta. Tente novamente ou use "Mudar Senha".' });
+      }
+
+      const token = jwt.sign({ id: user.id }, SECRET, { expiresIn: '1d' });
+      return res.json({ token, userId: user.id });
+    } catch (err) {
+      console.error('Erro no login:', err.message || err);
+      if (err.name === 'SequelizeDatabaseError' || (err.message && err.message.includes('SQLITE'))) {
+        return res.status(500).json({ erro: 'Erro no banco de dados. Aguarde alguns segundos e tente novamente.' });
+      }
+      const mensagem = err.message && err.message.length < 120 ? err.message : 'Erro ao entrar. Tente novamente.';
+      return res.status(500).json({ erro: mensagem });
     }
-
-    // Não exige "força da senha" no login — só no cadastro e ao trocar senha
-    const ok = await bcrypt.compare(senha, user.senha);
-    if (!ok) {
-      return res.status(401).json({ erro: 'Senha inválida' });
-    }
-
-    const token = jwt.sign({ id: user.id }, SECRET, { expiresIn: '1d' });
-
-    res.json({ token, userId: user.id });
   },
 
   async updatePassword(req, res) {

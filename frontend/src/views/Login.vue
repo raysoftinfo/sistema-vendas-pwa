@@ -71,7 +71,7 @@ async function login() {
     localStorage.setItem('token', res.data.token || 'ok');
     emit('entrou');
   } catch (e) {
-    const errorMsg = e.response?.data?.erro || 'Erro ao entrar';
+    const errorMsg = e.response?.data?.erro || (e.request ? 'Sem conexão com o servidor. Tente novamente.' : 'Erro ao entrar.');
     const senhaFraca = e.response?.data?.senhaFraca;
     
     if (senhaFraca) {
@@ -103,7 +103,7 @@ async function cadastrar() {
     erro.value = '';
     login();
   } catch (e) {
-    erro.value = e.response?.data?.erro || 'Erro ao cadastrar';
+    erro.value = e.response?.data?.erro || (e.request ? 'Sem conexão com o servidor.' : 'Erro ao cadastrar. Tente novamente.');
   } finally {
     loading.value = false;
   }
