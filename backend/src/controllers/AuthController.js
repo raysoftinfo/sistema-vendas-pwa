@@ -27,7 +27,13 @@ function validarForcaSenha(senha) {
 module.exports = {
   async register(req, res) {
     try {
-      const { nome, email, senha } = req.body;
+      const nome = (req.body.nome || '').trim();
+      const email = (req.body.email || '').trim();
+      const senha = (req.body.senha || '').trim();
+      
+      if (!nome || !email || !senha) {
+        return res.status(400).json({ erro: 'Preencha nome, email e senha' });
+      }
       
       // Validar força da senha
       const erroSenha = validarForcaSenha(senha);
@@ -54,19 +60,15 @@ module.exports = {
   },
 
   async login(req, res) {
-    const { email, senha } = req.body;
+    const email = (req.body.email || '').trim();
+    const senha = (req.body.senha || '').trim();
 
     const user = await Usuario.findOne({ where: { email } });
     if (!user) {
       return res.status(401).json({ erro: 'Usuário não encontrado' });
     }
 
-    // Somente se o usuário existir, verificar se a senha é fraca
-    const erroSenha = validarForcaSenha(senha);
-    if (erroSenha && senha) {
-      return res.status(400).json({ erro: erroSenha, senhaFraca: true });
-    }
-
+    // Não exige "força da senha" no login — só no cadastro e ao trocar senha
     const ok = await bcrypt.compare(senha, user.senha);
     if (!ok) {
       return res.status(401).json({ erro: 'Senha inválida' });
