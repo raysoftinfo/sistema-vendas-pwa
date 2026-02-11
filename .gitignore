@@ -1,0 +1,21 @@
+# Node
+node_modules/
+
+# Banco local (não enviar para o repositório)
+backend/database.sqlite
+database.sqlite
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Build
+frontend/dist/
+
+# Logs
+npm-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
