@@ -137,8 +137,17 @@ async function salvar() {
     }
     await carregar();
   } catch (e) {
-    const msg = e.response?.data?.erro || e.response?.data?.message || e.message;
-    mensagem.value = (msg && typeof msg === 'string' && msg.length < 150) ? msg : 'Erro ao salvar. Tente novamente.';
+    const status = e.response?.status;
+    const data = e.response?.data;
+    let msg = data?.erro ?? data?.message ?? e.message;
+    if (typeof data === 'string' && data.includes('failed to respond')) {
+      msg = 'Servidor demorou para responder. Tente novamente em instantes.';
+    } else if (status === 502 || status === 503 || status === 504) {
+      msg = 'Servidor temporariamente indisponível. Tente novamente em instantes.';
+    } else if (!msg || typeof msg !== 'string' || msg.length > 150) {
+      msg = 'Erro ao salvar. Tente novamente.';
+    }
+    mensagem.value = msg;
     mensagemErro.value = true;
     console.error('Erro ao salvar produto:', e);
   }
