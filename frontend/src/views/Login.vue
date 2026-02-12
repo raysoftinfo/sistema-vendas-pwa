@@ -3,6 +3,9 @@
     <h2>Login</h2>
     <p class="hint">Use o sistema de controle de doces em consignação.</p>
     <p v-if="isUsingCloudApi()" class="hint-cloud">Usando dados da nuvem — use o mesmo email e senha do site na web.</p>
+    <p v-if="isLocalHost() && isUsingCloudApi()" class="link-dados-locais">
+      <a href="#" @click.prevent="setUseCloudApi(false)">Usar dados locais</a> (entrar com a conta do seu PC)
+    </p>
 
     <div class="form">
       <input v-model="email" type="email" placeholder="Email" />
@@ -11,6 +14,7 @@
     </div>
 
     <p v-if="erro" class="erro">{{ erro }}</p>
+    <p v-if="erro && isLocalHost() && isUsingCloudApi()" class="dica">Não consegue entrar? <a href="#" @click.prevent="setUseCloudApi(false)">Use dados locais</a>.</p>
     <p v-if="sucesso" class="sucesso">{{ sucesso }}</p>
 
     <p class="cadastro">
@@ -41,7 +45,7 @@
 </template>
 
 <script setup>
-import api, { apiAuth, isUsingCloudApi } from '../services/api';
+import api, { apiAuth, isUsingCloudApi, isLocalHost, setUseCloudApi } from '../services/api';
 import { ref } from 'vue';
 
 const emit = defineEmits(['entrou']);
@@ -101,7 +105,10 @@ async function login() {
       }
     }
     const senhaFraca = data?.senhaFraca;
-    const textoFinal = mensagemAmigavel(errorMsg);
+    let textoFinal = mensagemAmigavel(errorMsg);
+    if (isUsingCloudApi() && textoFinal.includes('Erro inesperado')) {
+      textoFinal = 'Nuvem indisponível ou erro temporário. Clique em "Usar dados locais" abaixo para entrar com a conta do seu PC.';
+    }
     if (senhaFraca) {
       erro.value = `${textoFinal} - Clique em "Mudar Senha" para fortalecê-la.`;
     } else {
@@ -202,6 +209,10 @@ async function mudarSenha() {
 h2 { margin-top: 0; color: #2d5a27; }
 .hint { color: #666; font-size: 14px; margin-bottom: 20px; }
 .hint-cloud { color: #1565c0; font-size: 13px; margin-bottom: 12px; padding: 8px 12px; background: #e3f2fd; border-radius: 6px; }
+.link-dados-locais { font-size: 13px; margin-bottom: 12px; }
+.link-dados-locais a { color: #2d5a27; font-weight: 600; }
+.dica { font-size: 13px; margin-top: 8px; color: #666; }
+.dica a { color: #2d5a27; font-weight: 600; }
 .form { display: flex; flex-direction: column; gap: 12px; }
 .form input {
   padding: 10px 12px;
