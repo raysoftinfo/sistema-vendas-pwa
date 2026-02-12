@@ -93,7 +93,9 @@ async function login() {
       if (e.response) {
         errorMsg = `Servidor respondeu ${e.response.status}. Tente novamente.`;
       } else if (e.request) {
-        errorMsg = 'Sem conexão com o servidor. Verifique a internet.';
+        errorMsg = isUsingCloudApi()
+          ? 'Sem conexão com a nuvem. Verifique a internet e se o site na web abre em outra aba.'
+          : 'Sem conexão com o servidor. Verifique a internet.';
       } else {
         errorMsg = mensagemAmigavel(e.message);
       }
