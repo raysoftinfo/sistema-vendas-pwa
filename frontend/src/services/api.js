@@ -1,13 +1,13 @@
 import axios from 'axios';
 import * as offline from './offline';
 
-// Em produção (ex.: Railway) a URL não tem porta → mesma origem. Localmente usa :3333.
+// Produção (sem porta) ou app servido pelo backend (:3333/:3000) ou dev com proxy (:5173) → mesma origem.
 function getBaseURL() {
   if (typeof window === 'undefined') return '';
   const port = window.location.port || '';
-  // Sem porta (80/443) = produção → mesma origem
-  if (port === '') return '';
-  if (port === '3333' || port === '3000') return '';
+  if (port === '') return ''; // produção (Railway)
+  if (port === '3333' || port === '3000') return ''; // app no backend
+  if (port === '5173') return ''; // Vite dev: proxy envia para o backend
   const host = window.location.hostname || 'localhost';
   const protocol = window.location.protocol || 'http:';
   return `${protocol}//${host}:3333`;
@@ -121,12 +121,23 @@ export async function getQueueLength() {
 /** Estado para a UI: 'online' | 'offline' | 'syncing' | 'synced' */
 export function initOnlineListener(onChange) {
   if (typeof window === 'undefined') return;
-  window.addEventListener('online', () => {
+  function aoFicarOnline() {
     onChange('syncing');
     processQueue().then(() => onChange('synced'));
-  });
+  }
+  window.addEventListener('online', aoFicarOnline);
   window.addEventListener('offline', () => onChange('offline'));
-  if (offline.isOnline()) onChange('online');
+  if (offline.isOnline()) {
+    getQueueLength().then((n) => {
+      if (n > 0) {
+        aoFicarOnline();
+      } else {
+        onChange('online');
+      }
+    });
+  } else {
+    onChange('offline');
+  }
 }
 
 export { offline, apiAuth };
