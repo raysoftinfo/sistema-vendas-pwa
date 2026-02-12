@@ -78,40 +78,46 @@ function cancelarEdicao() {
 async function salvar() {
   if (!nome.value.trim()) return;
   mensagem.value = '';
-  let res;
-  if (editandoId.value) {
-    res = await api.put('/fornecedores/' + editandoId.value, {
-      nome: nome.value.trim(),
-      telefone: telefone.value.trim() || null,
-      contato: contato.value.trim() || null,
-      percentual_comissao: percentual.value
-    });
-    if (res.data && res.data._offline) {
-      mensagem.value = res.data.message || 'Salvo localmente. Será enviado quando houver conexão.';
-      return;
-    }
-    cancelarEdicao();
-  } else {
-    res = await api.post('/fornecedores', {
-      nome: nome.value.trim(),
-      telefone: telefone.value.trim() || null,
-      contato: contato.value.trim() || null,
-      percentual_comissao: percentual.value
-    });
-    if (res.data && res.data._offline) {
-      mensagem.value = res.data.message || 'Salvo localmente. Será enviado quando houver conexão.';
+  try {
+    let res;
+    if (editandoId.value) {
+      res = await api.put('/fornecedores/' + editandoId.value, {
+        nome: nome.value.trim(),
+        telefone: telefone.value.trim() || null,
+        contato: contato.value.trim() || null,
+        percentual_comissao: percentual.value
+      });
+      if (res.data && res.data._offline) {
+        mensagem.value = res.data.message || 'Salvo localmente. Será enviado quando houver conexão.';
+        return;
+      }
+      cancelarEdicao();
+    } else {
+      res = await api.post('/fornecedores', {
+        nome: nome.value.trim(),
+        telefone: telefone.value.trim() || null,
+        contato: contato.value.trim() || null,
+        percentual_comissao: percentual.value
+      });
+      if (res.data && res.data._offline) {
+        mensagem.value = res.data.message || 'Salvo localmente. Será enviado quando houver conexão.';
+        nome.value = '';
+        telefone.value = '';
+        contato.value = '';
+        percentual.value = 30;
+        return;
+      }
       nome.value = '';
       telefone.value = '';
       contato.value = '';
       percentual.value = 30;
-      return;
     }
-    nome.value = '';
-    telefone.value = '';
-    contato.value = '';
-    percentual.value = 30;
+    await carregar();
+  } catch (e) {
+    const msg = e.response?.data?.erro || e.response?.data?.message || e.message;
+    mensagem.value = (msg && typeof msg === 'string' && msg.length < 150) ? msg : 'Erro ao salvar. Tente novamente.';
+    console.error('Erro ao salvar fornecedor:', e);
   }
-  carregar();
 }
 
 async function excluir(f) {
