@@ -15,10 +15,8 @@ function getBaseURL() {
 
 const baseURL = getBaseURL();
 
-// Adapter padrão do axios (guardado de forma estável para a build)
-function getDefaultAdapter() {
-  return axios.defaults.adapter;
-}
+/** Instância sem adapter customizado: usada para fazer a requisição real (evita erro na build). */
+const apiPlain = axios.create({ baseURL });
 
 const api = axios.create({
   baseURL,
@@ -54,15 +52,11 @@ const api = axios.create({
       };
     }
 
-    const adapter = getDefaultAdapter();
-    if (typeof adapter !== 'function') {
-      return Promise.reject(new Error('Erro de conexão. Recarregue a página.'));
-    }
-    return adapter(config);
+    return apiPlain.request(config);
   }
 });
 
-/** Axios só para login/cadastro/senha — sem adapter offline, evita erros na build. */
+/** Axios só para login/cadastro/senha — sem adapter offline. */
 const apiAuth = axios.create({ baseURL });
 
 function addAuthHeader(config) {
@@ -74,6 +68,7 @@ function addAuthHeader(config) {
 }
 
 api.interceptors.request.use(addAuthHeader);
+apiPlain.interceptors.request.use(addAuthHeader);
 apiAuth.interceptors.request.use(addAuthHeader);
 
 api.interceptors.response.use(
