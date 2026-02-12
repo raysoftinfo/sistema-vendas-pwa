@@ -29,6 +29,8 @@ const Acerto = sequelize.define('Acerto', {
   data_recebimento: {
     type: DataTypes.DATE
   }
+}, {
+  tableName: 'Acertos'
 });
 
 Acerto.belongsTo(Fornecedor, { foreignKey: 'fornecedorId', as: 'Fornecedor' });

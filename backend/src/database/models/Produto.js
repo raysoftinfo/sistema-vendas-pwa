@@ -21,6 +21,8 @@ const Produto = sequelize.define('Produto', {
     onUpdate: 'CASCADE',
     onDelete: 'SET NULL'
   }
+}, {
+  tableName: 'Produtos'
 });
 
 Produto.belongsTo(Fornecedor, { foreignKey: 'fornecedorId', as: 'Fornecedor' });

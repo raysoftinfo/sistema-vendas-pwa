@@ -8,6 +8,8 @@ const Usuario = sequelize.define('Usuario', {
     unique: true
   },
   senha: DataTypes.STRING
+}, {
+  tableName: 'Usuarios'
 });
 
 module.exports = Usuario;

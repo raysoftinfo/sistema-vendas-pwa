@@ -16,6 +16,8 @@ const Fornecedor = sequelize.define('Fornecedor', {
     type: DataTypes.FLOAT,
     defaultValue: 30
   }
+}, {
+  tableName: 'Fornecedores'
 });
 
 module.exports = Fornecedor;

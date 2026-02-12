@@ -12,6 +12,8 @@ const Cliente = sequelize.define('Cliente', {
   email: {
     type: DataTypes.STRING
   }
+}, {
+  tableName: 'Clientes'
 });
 
 module.exports = Cliente;

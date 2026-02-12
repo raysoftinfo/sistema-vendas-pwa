@@ -36,6 +36,8 @@ const Venda = sequelize.define('Venda', {
     onUpdate: 'CASCADE',
     onDelete: 'SET NULL'
   }
+}, {
+  tableName: 'Vendas'
 });
 
 Venda.belongsTo(Produto, { foreignKey: 'produtoId', as: 'Produto' });
