@@ -37,8 +37,8 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(frontendDist, 'index.html'));
 });
 
-// Criar tabelas e usuário padrão na inicialização (necessário no deploy, ex.: Railway)
-sequelize.sync()
+// Promessa que resolve quando as tabelas existem e usuário padrão foi criado (servidor só sobe depois)
+app.dbReady = sequelize.sync()
   .then(() => {
     console.log('Banco de dados sincronizado');
     return Usuario.count();
@@ -54,9 +54,6 @@ sequelize.sync()
       });
       console.log('Usuario padrão criado: admin@controle.com / 123456');
     }
-  })
-  .catch(err => {
-    console.error('Erro ao sincronizar banco de dados:', err);
   });
 
 module.exports = app;

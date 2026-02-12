@@ -14,16 +14,23 @@ function ipLocal() {
   return null;
 }
 
-app.listen(PORT, '0.0.0.0', () => {
-  const ip = ipLocal();
-  console.log('');
-  console.log('  ============================================');
-  console.log('   CONTROLE DE DOCES - Servidor no ar');
-  console.log('  ============================================');
-  console.log('');
-  console.log('   No PC:     http://localhost:' + PORT);
-  if (ip) console.log('   No celular (mesma rede Wi-Fi):  http://' + ip + ':' + PORT);
-  console.log('');
-  console.log('   NAO FECHE ESTA JANELA enquanto usar o sistema.');
-  console.log('');
-});
+app.dbReady
+  .then(() => {
+    app.listen(PORT, '0.0.0.0', () => {
+      const ip = ipLocal();
+      console.log('');
+      console.log('  ============================================');
+      console.log('   CONTROLE DE DOCES - Servidor no ar');
+      console.log('  ============================================');
+      console.log('');
+      console.log('   No PC:     http://localhost:' + PORT);
+      if (ip) console.log('   No celular (mesma rede Wi-Fi):  http://' + ip + ':' + PORT);
+      console.log('');
+      console.log('   NAO FECHE ESTA JANELA enquanto usar o sistema.');
+      console.log('');
+    });
+  })
+  .catch((err) => {
+    console.error('Falha ao sincronizar banco de dados:', err);
+    process.exit(1);
+  });
