@@ -16,6 +16,7 @@
           <button class="nav-btn" :class="{ ativo: tela === 'clientes' }" @click="tela = 'clientes'">Clientes</button>
           <button class="nav-btn" :class="{ ativo: tela === 'produtos' }" @click="tela = 'produtos'">Produtos</button>
           <button class="nav-btn" :class="{ ativo: tela === 'vendas' }" @click="tela = 'vendas'">Vendas</button>
+          <button v-if="isLocalHost()" type="button" class="nav-btn nav-btn-cloud" @click="toggleCloud">{{ isUsingCloudApi() ? 'Dados locais' : 'Dados da nuvem' }}</button>
           <button class="nav-btn sair" @click="sair">Sair</button>
         </nav>
       </header>
@@ -29,6 +30,7 @@
           <button class="drawer-btn" :class="{ ativo: tela === 'clientes' }" @click="ir('clientes')">Clientes</button>
           <button class="drawer-btn" :class="{ ativo: tela === 'produtos' }" @click="ir('produtos')">Produtos</button>
           <button class="drawer-btn" :class="{ ativo: tela === 'vendas' }" @click="ir('vendas')">Vendas</button>
+          <button v-if="isLocalHost()" type="button" class="drawer-btn drawer-btn-cloud" @click="toggleCloud">{{ isUsingCloudApi() ? 'Dados locais' : 'Dados da nuvem' }}</button>
           <button class="drawer-btn sair" @click="sair">Sair</button>
         </nav>
       </aside>
@@ -59,7 +61,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { initOnlineListener, getQueueLength } from './services/api';
+import { initOnlineListener, getQueueLength, isLocalHost, isUsingCloudApi, setUseCloudApi } from './services/api';
 import Dashboard from './views/Dashboard.vue';
 import Fornecedores from './views/Fornecedores.vue';
 import Clientes from './views/Clientes.vue';
@@ -101,6 +103,10 @@ function handleEntrou() {
 function sair() {
   localStorage.removeItem('token');
   window.location.reload();
+}
+
+function toggleCloud() {
+  setUseCloudApi(!isUsingCloudApi());
 }
 </script>
 
@@ -189,6 +195,11 @@ body {
   background: rgba(255,255,255,0.5);
   font-weight: 600;
 }
+.nav-btn-cloud {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.5);
+  font-size: 13px;
+}
 
 /* Drawer (menu lateral) no mobile */
 .drawer-backdrop {
@@ -239,6 +250,12 @@ body {
   background: #e8f5e9;
   color: #2d5a27;
   font-weight: 600;
+}
+.drawer-btn-cloud {
+  margin-top: 8px;
+  background: #e3f2fd;
+  color: #1565c0;
+  font-size: 13px;
 }
 .drawer-btn.sair {
   margin-top: 12px;
