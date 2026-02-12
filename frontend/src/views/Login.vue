@@ -2,6 +2,7 @@
   <div class="login">
     <h2>Login</h2>
     <p class="hint">Use o sistema de controle de doces em consignação.</p>
+    <p v-if="isUsingCloudApi()" class="hint-cloud">Usando dados da nuvem — use o mesmo email e senha do site na web.</p>
 
     <div class="form">
       <input v-model="email" type="email" placeholder="Email" />
@@ -40,7 +41,7 @@
 </template>
 
 <script setup>
-import api, { apiAuth } from '../services/api';
+import api, { apiAuth, isUsingCloudApi } from '../services/api';
 import { ref } from 'vue';
 
 const emit = defineEmits(['entrou']);
@@ -198,6 +199,7 @@ async function mudarSenha() {
 }
 h2 { margin-top: 0; color: #2d5a27; }
 .hint { color: #666; font-size: 14px; margin-bottom: 20px; }
+.hint-cloud { color: #1565c0; font-size: 13px; margin-bottom: 12px; padding: 8px 12px; background: #e3f2fd; border-radius: 6px; }
 .form { display: flex; flex-direction: column; gap: 12px; }
 .form input {
   padding: 10px 12px;

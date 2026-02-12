@@ -23,6 +23,12 @@ const baseURL = getBaseURL();
 /** Instância sem adapter customizado: usada para fazer a requisição real (evita erro na build). */
 const apiPlain = axios.create({ baseURL });
 
+/** Garante que cada requisição use a baseURL atual (importante ao alternar Dados da nuvem / locais). */
+function ensureBaseURL(config) {
+  config.baseURL = getBaseURL();
+  return config;
+}
+
 const api = axios.create({
   baseURL,
   adapter: async (config) => {
@@ -58,6 +64,7 @@ const api = axios.create({
     }
 
     const { adapter: _adapter, ...configSemAdapter } = config;
+    configSemAdapter.baseURL = getBaseURL();
     return apiPlain.request(configSemAdapter);
   }
 });
@@ -73,8 +80,11 @@ function addAuthHeader(config) {
   return config;
 }
 
+api.interceptors.request.use(ensureBaseURL);
 api.interceptors.request.use(addAuthHeader);
+apiPlain.interceptors.request.use(ensureBaseURL);
 apiPlain.interceptors.request.use(addAuthHeader);
+apiAuth.interceptors.request.use(ensureBaseURL);
 apiAuth.interceptors.request.use(addAuthHeader);
 
 api.interceptors.response.use(
@@ -157,6 +167,7 @@ export function isUsingCloudApi() {
 
 export function setUseCloudApi(useCloud) {
   if (!isLocalHost()) return;
+  localStorage.removeItem('token');
   if (useCloud) localStorage.setItem('useCloudApi', 'true');
   else localStorage.removeItem('useCloudApi');
   window.location.reload();
