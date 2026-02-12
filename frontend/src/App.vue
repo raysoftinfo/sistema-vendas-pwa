@@ -41,6 +41,11 @@
           Você está offline. Alterações serão enviadas quando houver conexão.
           <template v-if="queueLength > 0"> ({{ queueLength }} pendente{{ queueLength !== 1 ? 's' : '' }})</template>
         </span>
+        <span v-else-if="statusOffline === 'pending_choice'" class="pending-choice">
+          {{ queueLength }} alteração(ões) pendente(s). Enviar para:
+          <button type="button" class="btn-enviar btn-pc" @click="enviarParaPc">PC local</button>
+          <button type="button" class="btn-enviar btn-nuvem" @click="enviarParaNuvem">Nuvem (web)</button>
+        </span>
         <span v-else-if="statusOffline === 'syncing'">
           Sincronizando{{ queueLength > 0 ? ` ${queueLength} alteração(ões)` : '' }}...
         </span>
@@ -61,7 +66,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { initOnlineListener, getQueueLength, isLocalHost, isUsingCloudApi, setUseCloudApi } from './services/api';
+import { initOnlineListener, getQueueLength, processQueue, processQueueToCloud, isLocalHost, isUsingCloudApi, setUseCloudApi } from './services/api';
 import Dashboard from './views/Dashboard.vue';
 import Fornecedores from './views/Fornecedores.vue';
 import Clientes from './views/Clientes.vue';
@@ -107,6 +112,22 @@ function sair() {
 
 function toggleCloud() {
   setUseCloudApi(!isUsingCloudApi());
+}
+
+async function enviarParaPc() {
+  statusOffline.value = 'syncing';
+  await processQueue();
+  await atualizarFila();
+  statusOffline.value = 'synced';
+  setTimeout(() => { statusOffline.value = 'online'; }, 2500);
+}
+
+async function enviarParaNuvem() {
+  statusOffline.value = 'syncing';
+  await processQueueToCloud();
+  await atualizarFila();
+  statusOffline.value = 'synced';
+  setTimeout(() => { statusOffline.value = 'online'; }, 2500);
 }
 </script>
 
@@ -280,6 +301,32 @@ body {
 .banner-offline.synced {
   background: #e8f5e9;
   color: #2d5a27;
+}
+.banner-offline.pending_choice {
+  background: #f3e5f5;
+  color: #4a148c;
+}
+.pending-choice {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.btn-enviar {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-enviar.btn-pc {
+  background: #2d5a27;
+  color: #fff;
+}
+.btn-enviar.btn-nuvem {
+  background: #1565c0;
+  color: #fff;
 }
 
 .main {

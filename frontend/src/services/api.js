@@ -126,29 +126,59 @@ export async function processQueue() {
   }
 }
 
+/** Envia a fila de pendências para a nuvem (localhost: usa proxy /api-cloud). */
+export async function processQueueToCloud() {
+  if (!isLocalHost()) return;
+  const list = await offline.getQueue();
+  const cloudApi = axios.create({
+    baseURL: '/api-cloud',
+    headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` }
+  });
+  for (const item of list) {
+    try {
+      await cloudApi.request({
+        method: item.method,
+        url: item.url,
+        data: item.data,
+        params: item.params
+      });
+      await offline.removeFromQueue(item.id);
+    } catch (e) {
+      console.warn('Falha ao enviar item para a nuvem:', item, e);
+    }
+  }
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('offline-sync-done'));
+  }
+}
+
 /** Quantidade de itens na fila (para exibir "Sincronizando X itens"). */
 export async function getQueueLength() {
   const list = await offline.getQueue();
   return list.length;
 }
 
-/** Estado para a UI: 'online' | 'offline' | 'syncing' | 'synced' */
+/** Estado: 'online' | 'offline' | 'syncing' | 'synced' | 'pending_choice' (local com fila: escolher PC ou nuvem) */
 export function initOnlineListener(onChange) {
   if (typeof window === 'undefined') return;
   function aoFicarOnline() {
-    onChange('syncing');
-    processQueue().then(() => onChange('synced'));
+    getQueueLength().then((n) => {
+      if (n === 0) {
+        onChange('online');
+        return;
+      }
+      if (isLocalHost()) {
+        onChange('pending_choice');
+        return;
+      }
+      onChange('syncing');
+      processQueue().then(() => onChange('synced'));
+    });
   }
   window.addEventListener('online', aoFicarOnline);
   window.addEventListener('offline', () => onChange('offline'));
   if (offline.isOnline()) {
-    getQueueLength().then((n) => {
-      if (n > 0) {
-        aoFicarOnline();
-      } else {
-        onChange('online');
-      }
-    });
+    aoFicarOnline();
   } else {
     onChange('offline');
   }
