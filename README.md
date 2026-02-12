@@ -12,32 +12,29 @@ Sistema de controle de doces em consignação: fornecedores, produtos, vendas e 
 
 A comissão é **sua**: você vende para o fornecedor e recebe o percentual configurado sobre as vendas.
 
-## Como rodar (mais fácil)
+## Como rodar (um clique ou um comando)
 
 ### Opção 1 – Duplo clique (recomendado)
 
-1. Na pasta do projeto, dê **dois cliques** em:
-   - **`ABRIR-CONTROLE-DOCES.bat`**
-2. Vai abrir uma **janela preta** (servidor) e o **navegador** em http://localhost:3000.
-3. **Não feche a janela preta** enquanto estiver usando o sistema.
+1. Na pasta do projeto, dê **dois cliques** em **`INICIAR.bat`**.
+2. Ele faz o **build do frontend** e sobe o **servidor**; em seguida abre o navegador em **http://localhost:3333**.
+3. **Não feche a janela do servidor** enquanto estiver usando.
 
-### Opção 2 – Pelo terminal
+### Opção 2 – Um comando no terminal
 
-1. Abra o **Prompt de Comando** ou **PowerShell**.
-2. Digite:
-   ```bash
-   cd d:\xampp\htdocs\controle-doces\backend
-   npm install
-   node server.js
-   ```
-3. Deixe essa janela aberta e acesse no navegador: **http://localhost:3000**
+Na pasta do projeto:
 
-(Crie o arquivo `.env` na pasta `backend` se ainda não existir.)
+```bash
+npm install
+npm run dev
+```
+
+Isso faz o build do frontend e inicia o servidor. Acesse **http://localhost:3333**.
 
 ### Importante
 
-- Use **sempre** a porta **3000** (http://localhost:3000). A porta 5173 não é mais usada.
-- Se aparecer "conexão recusada", o servidor não está rodando: execute o `.bat` de novo ou rode `node server.js` na pasta `backend` e **não feche a janela**.
+- A porta é **3333** (http://localhost:3333).
+- Se der "conexão recusada", use de novo o **INICIAR.bat** ou `npm run dev` e não feche a janela do servidor.
 
 ### 3. Primeiro uso
 
