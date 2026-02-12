@@ -2,25 +2,43 @@ const Produto = require('../database/models/Produto');
 const Fornecedor = require('../database/models/Fornecedor');
 const Venda = require('../database/models/Venda');
 
+function erroResposta(err, res, fallback) {
+  console.error('Erro Produto:', err.message || err);
+  const msg = err.message && err.message.length <= 200 ? err.message : fallback;
+  res.status(500).json({ erro: msg });
+}
+
 module.exports = {
   async create(req, res) {
-    const produto = await Produto.create(req.body);
-    return res.json(produto);
+    try {
+      const produto = await Produto.create(req.body);
+      return res.json(produto);
+    } catch (err) {
+      return erroResposta(err, res, 'Erro ao cadastrar produto.');
+    }
   },
 
   async list(req, res) {
-    const produtos = await Produto.findAll({
-      include: [{ model: Fornecedor, as: 'Fornecedor' }]
-    });
-    return res.json(produtos);
+    try {
+      const produtos = await Produto.findAll({
+        include: [{ model: Fornecedor, as: 'Fornecedor' }]
+      });
+      return res.json(produtos);
+    } catch (err) {
+      return erroResposta(err, res, 'Erro ao listar produtos.');
+    }
   },
 
   async update(req, res) {
-    const { id } = req.params;
-    const produto = await Produto.findByPk(id);
-    if (!produto) return res.status(404).json({ erro: 'Produto não encontrado' });
-    await produto.update(req.body);
-    return res.json(produto);
+    try {
+      const { id } = req.params;
+      const produto = await Produto.findByPk(id);
+      if (!produto) return res.status(404).json({ erro: 'Produto não encontrado' });
+      await produto.update(req.body);
+      return res.json(produto);
+    } catch (err) {
+      return erroResposta(err, res, 'Erro ao atualizar produto.');
+    }
   },
 
   async delete(req, res) {
