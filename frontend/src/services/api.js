@@ -1,16 +1,16 @@
 import axios from 'axios';
 import * as offline from './offline';
 
-// No localhost com "Dados da nuvem", usa /api-cloud: o backend local faz proxy para o Railway (evita CORS/CSP).
+// No localhost: padrão = dados da nuvem (mesma informação no PC e no site). Só usa "Dados locais" se escolher.
 const CLOUD_API_URL = 'https://sistema-vendas-pwa-production.up.railway.app';
 
 function getBaseURL() {
   if (typeof window === 'undefined') return '';
   const port = window.location.port || '';
   const isLocal = window.location.hostname === 'localhost' && (port === '3333' || port === '3000' || port === '5173');
-  if (isLocal && localStorage.getItem('useCloudApi') === 'true') return '/api-cloud';
+  if (isLocal && localStorage.getItem('useCloudApi') !== 'false') return '/api-cloud';
   if (port === '') return ''; // produção (Railway)
-  if (port === '3333' || port === '3000') return ''; // app no backend
+  if (port === '3333' || port === '3000') return ''; // app no backend (dados locais)
   if (port === '5173') return ''; // Vite dev: proxy envia para o backend
   const host = window.location.hostname || 'localhost';
   const protocol = window.location.protocol || 'http:';
@@ -191,14 +191,14 @@ export function isLocalHost() {
 }
 
 export function isUsingCloudApi() {
-  return isLocalHost() && localStorage.getItem('useCloudApi') === 'true';
+  return isLocalHost() && localStorage.getItem('useCloudApi') !== 'false';
 }
 
 export function setUseCloudApi(useCloud) {
   if (!isLocalHost()) return;
   localStorage.removeItem('token');
-  if (useCloud) localStorage.setItem('useCloudApi', 'true');
-  else localStorage.removeItem('useCloudApi');
+  if (useCloud) localStorage.removeItem('useCloudApi');
+  else localStorage.setItem('useCloudApi', 'false');
   window.location.reload();
 }
 
