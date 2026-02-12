@@ -2,6 +2,9 @@
   <div class="dashboard">
     <h2>Dashboard</h2>
     <p class="subtitulo">Comissões por fornecedor</p>
+    <p v-if="isLocalHost()" class="origem-dados">
+      {{ isUsingCloudApi() ? 'Dados da nuvem (site na web)' : 'Dados do seu PC' }}
+    </p>
 
     <div v-if="carregando" class="msg">Carregando...</div>
     <p v-else-if="mensagemOffline" class="msg msg-offline">{{ mensagemOffline }}</p>
@@ -80,7 +83,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import api from '../services/api';
+import api, { isLocalHost, isUsingCloudApi } from '../services/api';
 
 const resumo = ref({
   totalFornecedores: 0,
@@ -189,6 +192,7 @@ onUnmounted(() => {
 <style scoped>
 .dashboard h2 { color: #2d5a27; margin-top: 0; }
 .subtitulo { color: #666; margin-bottom: 20px; }
+.origem-dados { font-size: 12px; color: #888; margin: -8px 0 16px 0; }
 .resumo {
   display: flex;
   flex-wrap: wrap;
