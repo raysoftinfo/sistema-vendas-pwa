@@ -43,22 +43,24 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(frontendDist, 'index.html'));
 });
 
-// Promessa que resolve quando as tabelas existem e usuário padrão foi criado (servidor só sobe depois)
+// Servidor sobe assim que as tabelas existem; usuário padrão é criado em background (evita 7+ min no Railway).
 app.dbReady = sequelize.sync()
   .then(() => {
     console.log('Banco de dados sincronizado');
     return Usuario.count();
   })
-  .then(async (count) => {
+  .then((count) => {
     if (count === 0) {
       const bcrypt = require('bcryptjs');
-      const senhaHash = await bcrypt.hash('123456', 8);
-      await Usuario.create({
-        nome: 'Administrador',
-        email: 'admin@controle.com',
-        senha: senhaHash
-      });
-      console.log('Usuario padrão criado: admin@controle.com / 123456');
+      bcrypt.hash('123456', 8).then((senhaHash) => {
+        return Usuario.create({
+          nome: 'Administrador',
+          email: 'admin@controle.com',
+          senha: senhaHash
+        });
+      }).then(() => {
+        console.log('Usuario padrão criado: admin@controle.com / 123456');
+      }).catch((err) => console.error('Erro ao criar usuário padrão:', err.message));
     }
   });
 
