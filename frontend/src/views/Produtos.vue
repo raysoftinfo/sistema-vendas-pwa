@@ -105,36 +105,43 @@ async function salvar() {
   if (!nome.value.trim() || preco.value === '' || !fornecedorId.value || fornecedorId.value === 0) return;
   mensagem.value = '';
   mensagemErro.value = false;
-  let res;
-  if (editandoId.value) {
-    res = await api.put('/produtos/' + editandoId.value, {
-      nome: nome.value.trim(),
-      preco_venda: Number(preco.value),
-      fornecedorId: fornecedorId.value
-    });
-    if (res.data && res.data._offline) {
-      mensagem.value = res.data.message || 'Salvo localmente. Será enviado quando houver conexão.';
-      return;
-    }
-    cancelarEdicao();
-  } else {
-    res = await api.post('/produtos', {
-      nome: nome.value.trim(),
-      preco_venda: Number(preco.value),
-      fornecedorId: fornecedorId.value
-    });
-    if (res.data && res.data._offline) {
-      mensagem.value = res.data.message || 'Salvo localmente. Será enviado quando houver conexão.';
+  try {
+    let res;
+    if (editandoId.value) {
+      res = await api.put('/produtos/' + editandoId.value, {
+        nome: nome.value.trim(),
+        preco_venda: Number(preco.value),
+        fornecedorId: fornecedorId.value
+      });
+      if (res.data && res.data._offline) {
+        mensagem.value = res.data.message || 'Salvo localmente. Será enviado quando houver conexão.';
+        return;
+      }
+      cancelarEdicao();
+    } else {
+      res = await api.post('/produtos', {
+        nome: nome.value.trim(),
+        preco_venda: Number(preco.value),
+        fornecedorId: fornecedorId.value
+      });
+      if (res.data && res.data._offline) {
+        mensagem.value = res.data.message || 'Salvo localmente. Será enviado quando houver conexão.';
+        nome.value = '';
+        preco.value = '';
+        fornecedorId.value = 0;
+        return;
+      }
       nome.value = '';
       preco.value = '';
       fornecedorId.value = 0;
-      return;
     }
-    nome.value = '';
-    preco.value = '';
-    fornecedorId.value = 0;
+    await carregar();
+  } catch (e) {
+    const msg = e.response?.data?.erro || e.response?.data?.message || e.message;
+    mensagem.value = (msg && typeof msg === 'string' && msg.length < 150) ? msg : 'Erro ao salvar. Tente novamente.';
+    mensagemErro.value = true;
+    console.error('Erro ao salvar produto:', e);
   }
-  carregar();
 }
 
 function abrirModalExcluir(p) {
