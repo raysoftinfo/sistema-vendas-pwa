@@ -14,6 +14,7 @@ require('./database/models/Acerto');
 require('./database/models/Usuario');
 
 const routes = require('./routes');
+const cloudProxy = require('./middlewares/cloudProxy');
 
 const path = require('path');
 
@@ -26,6 +27,7 @@ app.use(cors({
 }));
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(morgan('combined'));
+app.use('/api-cloud', cloudProxy);
 app.use(routes);
 
 // Qualquer erro não tratado volta como JSON com mensagem clara (nunca resposta vazia ou HTML)

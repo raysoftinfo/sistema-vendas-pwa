@@ -1,15 +1,14 @@
 import axios from 'axios';
 import * as offline from './offline';
 
+// No localhost com "Dados da nuvem", usa /api-cloud: o backend local faz proxy para o Railway (evita CORS/CSP).
 const CLOUD_API_URL = 'https://sistema-vendas-pwa-production.up.railway.app';
 
-// Produção (sem porta) ou app servido pelo backend (:3333/:3000) ou dev com proxy (:5173) → mesma origem.
-// No localhost, se localStorage 'useCloudApi' === 'true', usa a API da nuvem (mesmos dados do web).
 function getBaseURL() {
   if (typeof window === 'undefined') return '';
   const port = window.location.port || '';
   const isLocal = window.location.hostname === 'localhost' && (port === '3333' || port === '3000' || port === '5173');
-  if (isLocal && localStorage.getItem('useCloudApi') === 'true') return CLOUD_API_URL;
+  if (isLocal && localStorage.getItem('useCloudApi') === 'true') return '/api-cloud';
   if (port === '') return ''; // produção (Railway)
   if (port === '3333' || port === '3000') return ''; // app no backend
   if (port === '5173') return ''; // Vite dev: proxy envia para o backend
