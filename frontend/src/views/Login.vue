@@ -15,6 +15,7 @@
 
     <p v-if="erro" class="erro">{{ erro }}</p>
     <p v-if="erro && isLocalHost() && isUsingCloudApi()" class="dica">Não consegue entrar? <a href="#" @click.prevent="setUseCloudApi(false)">Use dados locais</a>.</p>
+    <p v-if="erro && isUsingCloudApi()" class="dica-link">Ou abra o site na web: <a :href="CLOUD_API_URL" target="_blank" rel="noopener">{{ CLOUD_API_URL.replace('https://', '') }}</a></p>
     <p v-if="sucesso" class="sucesso">{{ sucesso }}</p>
 
     <p class="cadastro">
@@ -45,7 +46,7 @@
 </template>
 
 <script setup>
-import api, { apiAuth, isUsingCloudApi, isLocalHost, setUseCloudApi } from '../services/api';
+import api, { apiAuth, isUsingCloudApi, isLocalHost, setUseCloudApi, CLOUD_API_URL } from '../services/api';
 import { ref } from 'vue';
 
 const emit = defineEmits(['entrou']);
@@ -213,6 +214,8 @@ h2 { margin-top: 0; color: #2d5a27; }
 .link-dados-locais a { color: #2d5a27; font-weight: 600; }
 .dica { font-size: 13px; margin-top: 8px; color: #666; }
 .dica a { color: #2d5a27; font-weight: 600; }
+.dica-link { font-size: 12px; margin-top: 6px; color: #666; word-break: break-all; }
+.dica-link a { color: #1565c0; }
 .form { display: flex; flex-direction: column; gap: 12px; }
 .form input {
   padding: 10px 12px;

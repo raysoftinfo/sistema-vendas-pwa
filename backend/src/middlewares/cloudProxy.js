@@ -37,6 +37,13 @@ function proxyToCloud(req, res) {
     res.status(502).json({ erro: 'Não foi possível conectar à nuvem. Tente novamente.' });
   });
 
+  proxyReq.setTimeout(60000, () => {
+    proxyReq.destroy();
+    if (!res.headersSent) {
+      res.status(504).json({ erro: 'A nuvem demorou para responder. No plano gratuito pode levar 1 minuto — tente de novo.' });
+    }
+  });
+
   if (body) {
     proxyReq.write(body);
   }
