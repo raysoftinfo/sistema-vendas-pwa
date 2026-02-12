@@ -52,7 +52,8 @@ const api = axios.create({
       };
     }
 
-    return apiPlain.request(config);
+    const { adapter: _adapter, ...configSemAdapter } = config;
+    return apiPlain.request(configSemAdapter);
   }
 });
 
